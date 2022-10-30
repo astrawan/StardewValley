@@ -1,0 +1,3 @@
+[submodule "gogextract"]
+	path = gogextract
+	url = https://github.com/Yepoleb/gogextract.git

@@ -1,0 +1,5 @@
+.flatpak-builder/
+.logs/
+build-dir/
+extract/
+stardew_valley_1_5_6_1988831614_53040.sh

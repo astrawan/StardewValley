@@ -1,0 +1,59 @@
+---
+app-id: com.github.astrawan.StardewValley
+runtime: org.freedesktop.Platform
+runtime-version: '22.08'
+sdk: org.freedesktop.Sdk
+cleanup:
+  - '/include'
+  - '/lib/pkgconfig'
+  - '/share/doc'
+  - '/share/man'
+command: gog-stardew-valley
+build-options:
+  no-debuginfo: true
+separate-locales: false
+finish-args:
+  - --device=dri
+  - --filesystem=xdg-run/pipewire-0
+  # co-op mode
+  - --share=network
+  - --socket=pulseaudio
+  - --socket=x11
+  - --socket=fallback-x11
+  - --socket=wayland
+modules:
+  - name: openssl-1.x
+    buildsystem: simple
+    build-commands:
+      - ./config --prefix=$FLATPAK_DEST --openssldir=$FLATPAK_DEST/etc/ssl --release
+      - make
+      - make install
+    sources:
+      - type: 'archive'
+        url: https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1r.tar.gz
+        sha256: fc513913724790510f53af07caa24eaf0eae3fc8cf476c17c113221b5868edac
+  - name: stardew-valley
+    buildsystem: simple
+    # NOTE: game linked with openssl 1.x
+    # https://aur.archlinux.org/packages/gog-stardew-valley
+    build-commands:
+      - python gogextract.py stardew_valley_1_5_6_1988831614_53040.sh extract
+      - install -d $FLATPAK_DEST/gog-stardew-valley
+      - unzip -qq extract/data.zip "data/noarch/*" -d extract/
+      - mv extract/data/noarch/* $FLATPAK_DEST/gog-stardew-valley/
+      - find $FLATPAK_DEST/gog-stardew-valley -type d -exec chmod 755 {} \;
+      - install -Dm 755 gog-stardew-valley $FLATPAK_DEST/bin/gog-stardew-valley
+      - install -Dm 644 gog-stardew-valley.desktop $FLATPAK_DEST/share/applications/$FLATPAK_ID.desktop
+      - install -Dm 644 $FLATPAK_DEST/gog-stardew-valley/support/icon.png $FLATPAK_DEST/share/icons/hicolor/128x128/apps/$FLATPAK_ID.png
+    sources:
+      - type: file
+        path: stardew_valley_1_5_6_1988831614_53040.sh
+        sha256: 692722cb77acbccf7392abfbaec54cae34fd6edb8e62cfb2843f70494cb5ea91
+      - type: file
+        path: gogextract/gogextract.py
+      - type: script
+        dest-filename: gog-stardew-valley
+        commands:
+          - /app/gog-stardew-valley/start.sh "${@}"
+      - type: file
+        path: gog-stardew-valley.desktop
