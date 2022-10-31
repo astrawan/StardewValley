@@ -1,4 +1,5 @@
----
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flatpak/flatpak-builder/main/data/flatpak-manifest.schema.json
+
 app-id: com.github.astrawan.StardewValley
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
@@ -14,6 +15,7 @@ build-options:
 separate-locales: false
 finish-args:
   - --device=dri
+  - --filesystem=xdg-config/StardewValley:create
   - --filesystem=xdg-run/pipewire-0
   # co-op mode
   - --share=network
@@ -34,7 +36,6 @@ modules:
         sha256: fc513913724790510f53af07caa24eaf0eae3fc8cf476c17c113221b5868edac
   - name: stardew-valley
     buildsystem: simple
-    # NOTE: game linked with openssl 1.x
     # https://aur.archlinux.org/packages/gog-stardew-valley
     build-commands:
       - python gogextract.py stardew_valley_1_5_6_1988831614_53040.sh extract
@@ -51,9 +52,24 @@ modules:
         sha256: 692722cb77acbccf7392abfbaec54cae34fd6edb8e62cfb2843f70494cb5ea91
       - type: file
         path: gogextract/gogextract.py
-      - type: script
-        dest-filename: gog-stardew-valley
-        commands:
-          - /app/gog-stardew-valley/start.sh "${@}"
+      - type: file
+        path: gog-stardew-valley
       - type: file
         path: gog-stardew-valley.desktop
+  - name: smapi
+    buildsystem: simple
+    build-commands:
+      - unzip internal/linux/install.dat -d install
+      - mv -f install/* $FLATPAK_DEST/gog-stardew-valley/game/
+      - cp -r $FLATPAK_DEST/gog-stardew-valley/game/{Stardew\ Valley.deps.json,StardewModdingAPI.deps.json}
+      - mv -f $FLATPAK_DEST/gog-stardew-valley/game/smapi-internal/{config.json,config.json-original}
+      - mv -f $FLATPAK_DEST/gog-stardew-valley/game/{Mods,Mods-original}
+      - mv -f $FLATPAK_DEST/gog-stardew-valley/game/{StardewValley,StardewValley-original}
+      - mv -f $FLATPAK_DEST/gog-stardew-valley/game/{StardewModdingAPI,StardewValley}
+      - ln -s ~/.config/StardewValley/smapi-internal-config.json $FLATPAK_DEST/gog-stardew-valley/game/smapi-internal/config.json
+      - ln -s ~/.config/StardewValley/Mods $FLATPAK_DEST/gog-stardew-valley/game/Mods
+      - ln -s ~/.config/StardewValley/save-backups $FLATPAK_DEST/gog-stardew-valley/game/save-backups
+    sources:
+      - type: 'archive'
+        url: https://github.com/Pathoschild/SMAPI/releases/download/3.17.2/SMAPI-3.17.2-installer.zip
+        sha256: a6bd6d3cd4bb72ecacd62985dad2f52429438ee5c8168e0183b4f7d062ad6610

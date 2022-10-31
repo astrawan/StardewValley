@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ ! -d ~/.config/StardewValley/Mods ]; then
+  cp -r /app/gog-stardew-valley/game/Mods-original ~/.config/StardewValley/Mods
+fi
+
+if [ ! -d ~/.config/StardewValley/save-backups ]; then
+  mkdir -p ~/.config/StardewValley/save-backups
+fi
+
+if [ ! -f ~/.config/StardewValley/smapi-internal-config.json ]; then
+  cp -r /app/gog-stardew-valley/game/smapi-internal/config.json-original \
+    ~/.config/StardewValley/smapi-internal-config.json
+fi
+
+/app/gog-stardew-valley/start.sh "${@}"
